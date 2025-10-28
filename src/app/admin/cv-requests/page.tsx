@@ -78,7 +78,7 @@ export default function AdminCVRequestsPage() {
 
   return (
     <AdminLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"> */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Gestion des demandes de CV
@@ -340,7 +340,7 @@ export default function AdminCVRequestsPage() {
             </>
           )}
         </div>
-      </div>
+      {/* </div> */}
 
       {/* Modale de confirmation suppression */}
       {requestToDelete && (

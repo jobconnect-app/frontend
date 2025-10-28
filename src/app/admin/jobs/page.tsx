@@ -156,7 +156,6 @@ export default function AdminJobsPage() {
 
   return (
     <AdminLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Gestion des offres d&apos;emploi
@@ -640,7 +639,6 @@ export default function AdminJobsPage() {
             </>
           )}
         </div>
-      </div>
 
       <OffreModal
         open={modalOpen}
