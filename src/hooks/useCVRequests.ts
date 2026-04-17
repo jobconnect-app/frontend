@@ -1,69 +1,91 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { CVRequest } from "../lib/types";
+import { api, authHeaders } from "../lib/api";
+import { useAuth } from "./useAuth";
 
 export function useCVRequests() {
-  const [cvRequests, setCVRequests] = useState<CVRequest[]>([
-    {
-      id: 1,
-      name: "Alice Dupont",
-      email: "alice@email.com",
-      status: "En attente",
-    },
-    { id: 2, name: "Bob Martin", email: "bob@email.com", status: "Traité" },
-  ]);
+  const { token } = useAuth();
+  const [cvRequests, setCVRequests] = useState<CVRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingCVRequest, setEditingCVRequest] = useState<CVRequest | null>(
-    null,
-  );
+  const [editingCVRequest, setEditingCVRequest] = useState<CVRequest | null>(null);
+
+  const fetchCVRequests = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.get<CVRequest[]>("/cv-requests", authHeaders(token));
+      setCVRequests(res.data);
+    } catch {
+      setError("Erreur lors du chargement des demandes de CV");
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchCVRequests();
+  }, [fetchCVRequests]);
 
   const openAddModal = () => {
     setEditingCVRequest(null);
     setModalOpen(true);
   };
+
   const openEditModal = (cvRequest: CVRequest) => {
     setEditingCVRequest(cvRequest);
     setModalOpen(true);
   };
+
   const closeModal = () => {
     setModalOpen(false);
     setEditingCVRequest(null);
   };
 
-  const addCVRequest = (cvRequest: Omit<CVRequest, "id" | "status">) => {
+  const addCVRequest = async (cvRequestData: Omit<CVRequest, "id" | "status" | "dateDemande">) => {
     setLoading(true);
-    setTimeout(() => {
-      setCVRequests((prev) => [
-        { ...cvRequest, id: Date.now(), status: "En attente" },
-        ...prev,
-      ]);
-      setNotification("Demande de CV ajoutée avec succès");
-      setLoading(false);
+    setError(null);
+    try {
+      await api.post("/cv-requests", cvRequestData, authHeaders(token));
+      setNotification("Demande de CV créée avec succès");
       closeModal();
-    }, 700);
+      fetchCVRequests();
+    } catch {
+      setError("Erreur lors de la création de la demande de CV");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const editCVRequest = (cvRequest: CVRequest) => {
+  const updateCVRequestStatus = async (id: number, statut: string) => {
     setLoading(true);
-    setTimeout(() => {
-      setCVRequests((prev) =>
-        prev.map((c) => (c.id === cvRequest.id ? cvRequest : c)),
-      );
-      setNotification("Demande de CV modifiée avec succès");
+    setError(null);
+    try {
+      await api.patch(`/cv-requests/${id}/statut`, { statut }, authHeaders(token));
+      setNotification("Statut de la demande mis à jour");
+      fetchCVRequests();
+    } catch {
+      setError("Erreur lors de la mise à jour du statut");
+    } finally {
       setLoading(false);
-      closeModal();
-    }, 700);
+    }
   };
 
-  const deleteCVRequest = (id: number) => {
+  const deleteCVRequest = async (id: number) => {
     setLoading(true);
-    setTimeout(() => {
-      setCVRequests((prev) => prev.filter((c) => c.id !== id));
+    setError(null);
+    try {
+      await api.delete(`/cv-requests/${id}`, authHeaders(token));
       setNotification("Demande de CV supprimée");
+      fetchCVRequests();
+    } catch {
+      setError("Erreur lors de la suppression de la demande de CV");
+    } finally {
       setLoading(false);
-    }, 700);
+    }
   };
 
   const clearNotification = () => setNotification(null);
@@ -79,7 +101,7 @@ export function useCVRequests() {
     openEditModal,
     closeModal,
     addCVRequest,
-    editCVRequest,
+    updateCVRequestStatus,
     deleteCVRequest,
     clearNotification,
   };

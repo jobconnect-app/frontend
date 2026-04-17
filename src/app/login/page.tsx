@@ -27,7 +27,7 @@ export default function LoginPage() {
           email,
           motDePasse: password,
         });
-        login(res.data.access_token, { email, role: "ADMIN" }); // ou récupérer le vrai rôle depuis le backend si possible
+        login(res.data.access_token, { email, role: "ADMIN" });
         localStorage.setItem("refresh_token", res.data.refresh_token);
         window.location.href = "/admin/dashboard";
       } else {
