@@ -5,75 +5,104 @@ import Footer from "../../../components/Footer";
 import CVRecommandeSection from "../../../components/CVRecommandeSection";
 import SimilarJobsSection from "../../../components/SimilarJobsSection";
 import CandidatureModal from "../../../components/CandidatureModal";
+import { Briefcase, MapPin, Banknote, Calendar, ChevronLeft, Share2 } from "lucide-react";
+import Link from "next/link";
 
-// Pour l'instant, données mockées
+// Données mockées (à remplacer par un fetch via params.id plus tard)
 const mockJob = {
   title: "Développeur Fullstack JS",
   company: "TechCorp",
   location: "Paris, France",
   salary: "45-55k€",
-  tags: ["CDI", "Remote", "React", "Node.js"],
-  description: `Nous recherchons un développeur fullstack passionné pour rejoindre notre équipe dynamique. Vous travaillerez sur des projets innovants en React et Node.js, dans un environnement agile et bienveillant.\n\nCompétences requises :\n- React\n- Node.js\n- API REST\n- Travail en équipe\n\nAvantages :\n- Télétravail possible\n- Mutuelle\n- Tickets restaurant`,
+  type: "CDI",
+  postedAt: "Il y a 2 jours",
+  tags: ["React", "Node.js", "TypeScript", "Remote Friendly"],
+  description: `Nous recherchons un développeur fullstack passionné pour rejoindre notre équipe dynamique. Vous travaillerez sur des projets innovants en React et Node.js, dans un environnement agile et bienveillant.\n\nCompétences requises :\n- React & Node.js expert\n- Maîtrise des API REST & GraphQL\n- Esprit d'équipe et rigueur\n\nAvantages :\n- Télétravail flexible\n- Mutuelle premium\n- Budget formation annuel`,
 };
 
 export default function JobDetailPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const job = mockJob;
+
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col items-center">
+    <div style={{ minHeight: "100vh", background: "var(--bg-base)", color: "var(--text-primary)" }}>
       <Navbar />
-      <main className="w-full max-w-3xl px-4 py-10 flex flex-col gap-6">
-        <h1 className="text-3xl font-bold mb-2 animate-fadein">{job.title}</h1>
-        <div className="flex flex-wrap gap-4 items-center text-gray-500 dark:text-gray-300 text-sm animate-fadein">
-          <span>{job.company}</span>
-          <span>•</span>
-          <span>{job.location}</span>
-          <span>•</span>
-          <span className="text-blue-600 font-semibold">{job.salary}</span>
+      
+      <main style={{ maxWidth: "1000px", margin: "0 auto", padding: "40px 24px" }}>
+        
+        {/* Retour et Actions */}
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "32px" }}>
+          <Link href="/offres" style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--text-secondary)", fontSize: "14px" }}>
+            <ChevronLeft size={18} /> Retour aux offres
+          </Link>
+          <button className="btn-ghost">
+            <Share2 size={18} /> Partager
+          </button>
         </div>
-        <div className="flex flex-wrap gap-2 mt-2 animate-fadein">
-          {job.tags.map((tag) => (
-            <span
-              key={tag}
-              className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium"
-            >
-              {tag}
-            </span>
-          ))}
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: "32px", alignItems: "start" }}>
+          
+          {/* Colonne Gauche : Détails */}
+          <div className="animate-fade-up">
+            <div style={{ marginBottom: "24px" }}>
+              <div className="badge badge-blue" style={{ marginBottom: "16px" }}>{job.type}</div>
+              <h1 style={{ fontSize: "clamp(28px, 4vw, 40px)", marginBottom: "16px" }}>{job.title}</h1>
+              
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", color: "var(--text-secondary)", fontSize: "15px" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Briefcase size={18} color="var(--accent-primary)" /> {job.company}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><MapPin size={18} color="var(--accent-primary)" /> {job.location}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Banknote size={18} color="var(--accent-primary)" /> {job.salary}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Calendar size={18} color="var(--accent-primary)" /> {job.postedAt}</span>
+              </div>
+            </div>
+
+            <div className="glass-card" style={{ padding: "32px", marginBottom: "32px" }}>
+              <h2 style={{ fontSize: "20px", marginBottom: "20px" }}>Description du poste</h2>
+              <div style={{ 
+                whiteSpace: "pre-line", 
+                color: "var(--text-secondary)", 
+                lineHeight: "1.8",
+                fontSize: "16px"
+              }}>
+                {job.description}
+              </div>
+
+              <div style={{ marginTop: "32px", display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                {job.tags.map(tag => (
+                  <span key={tag} className="badge badge-gray">{tag}</span>
+                ))}
+              </div>
+            </div>
+
+            <CVRecommandeSection />
+            <SimilarJobsSection />
+          </div>
+
+          {/* Colonne Droite : Sidebar Action */}
+          <aside className="animate-fade-up delay-100" style={{ position: "sticky", top: "100px" }}>
+            <div className="glass-card" style={{ padding: "24px", textAlign: "center", border: "1px solid var(--border-accent)" }}>
+              <h3 style={{ fontSize: "18px", marginBottom: "16px" }}>Prêt à postuler ?</h3>
+              <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "24px" }}>
+                Répondez à cette offre en quelques clics. Votre profil sera transmis directement aux recruteurs.
+              </p>
+              <button
+                onClick={() => setModalOpen(true)}
+                className="btn-primary"
+                style={{ width: "100%", justifyContent: "center", padding: "14px" }}
+              >
+                Postuler maintenant
+              </button>
+              
+              <div style={{ marginTop: "20px", fontSize: "12px", color: "var(--text-muted)" }}>
+                Réponse moyenne : 48h
+              </div>
+            </div>
+          </aside>
         </div>
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mt-4 whitespace-pre-line animate-fadein">
-          {job.description}
-        </div>
-        <button
-          onClick={() => setModalOpen(true)}
-          className="mt-6 inline-block bg-green-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-green-700 transition self-start animate-fadein"
-        >
-          Postuler
-        </button>
-        <CVRecommandeSection />
-        <SimilarJobsSection />
-        <CandidatureModal
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-        />
+
+        <CandidatureModal open={modalOpen} onClose={() => setModalOpen(false)} />
       </main>
       <Footer />
-      {/* Animation fade-in CSS */}
-      <style jsx global>{`
-        .animate-fadein {
-          animation: fadein 0.7s ease;
-        }
-        @keyframes fadein {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: none;
-          }
-        }
-      `}</style>
     </div>
   );
 }

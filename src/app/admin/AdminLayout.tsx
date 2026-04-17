@@ -2,17 +2,32 @@
 import React from "react";
 import Sidebar from "./Sidebar";
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex bg-gray-50 dark:bg-gray-900">
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg-base)" }}>
       <Sidebar />
-      <main className="flex-1 ml-0 md:ml-64 p-8 md:p-12 transition-all duration-200 space-y-8">
+      <main style={{
+        flex:      1,
+        marginLeft: 236,
+        padding:   "32px",
+        minHeight: "100vh",
+        maxWidth:  "calc(100vw - 236px)",
+        overflowX: "hidden",
+      }}
+        className="admin-main"
+      >
         {children}
       </main>
+
+      <style>{`
+        @media (max-width: 767px) {
+          .admin-main {
+            margin-left: 0 !important;
+            max-width: 100vw !important;
+            padding: 60px 16px 24px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

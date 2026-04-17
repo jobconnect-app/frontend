@@ -1,0 +1,40 @@
+name: CI Next.js Workflow
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Configuration de Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20 # Version recommandée pour Next.js 15
+          cache: 'npm'
+
+      - name: Installation des dépendances
+        run: npm ci
+
+      - name: Vérification TypeScript
+        run: npm run lint # Next.js inclut souvent le check type dans le lint, sinon utilise: npx tsc
+
+      - name: Build de l'application
+        run: npm run build
+        env:
+          # Si tu as des variables d'environnement nécessaires au build, 
+          # ajoute-les ici ou dans les secrets GitHub
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+
+      - name: Upload du build (Optionnel)
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: .next/
