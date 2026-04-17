@@ -2,339 +2,246 @@
 import AdminLayout from "../AdminLayout";
 import React, { useEffect, useState } from "react";
 import {
-  faUser,
-  faBriefcase,
-  faFileAlt,
-  faDownload,
-  faFileSignature,
-  faHourglassHalf,
-  faCheckCircle,
-  faTimesCircle,
-  faClock,
-  faChartBar,
-  faSpinner,
+  faUser, faBriefcase, faFileAlt, faDownload,
+  faFileSignature, faHourglassHalf, faCheckCircle,
+  faTimesCircle, faClock, faChartBar,
 } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAuth } from "../../../hooks/useAuth";
 import { api, authHeaders } from "../../../lib/api";
 import StatCard from "../../../components/StatCard";
+import Loader from "../../../components/Loader";
 import { useRouter } from "next/navigation";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface DashboardStats {
-  users: number;
-  jobs: number;
-  applications: number;
-  cvDownloads: number;
-  cvRequestsPending: number;
-  jobsByCategory: { category: string; count: number }[];
-  deletedUsers: number;
-  pendingApplications: number;
+  users:              number;
+  jobs:               number;
+  applications:       number;
+  cvDownloads:        number;
+  cvRequestsPending:  number;
+  jobsByCategory:     { category: string; count: number }[];
+  deletedUsers:       number;
+  pendingApplications:number;
+  newUsersToday:      number;
 }
 
 interface JobsStats {
-  totalJobs: number;
+  totalJobs:       number;
   totalJobsActive: number;
-  activeJobs: number;
-  expiredJobs: number;
-  upcomingJobs: number;
-  remoteJobs: number;
-  jobsByType: { type: string; count: number }[];
+  activeJobs:      number;
+  expiredJobs:     number;
+  upcomingJobs:    number;
+  remoteJobs:      number;
+  jobsByType:      { type: string; count: number }[];
 }
+
+const CHART_COLORS = [
+  "#00e5b0", "#3b9eff", "#a78bfa", "#fb923c",
+  "#f87171", "#34d399", "#60a5fa", "#f472b6",
+];
 
 export default function AdminDashboardPage() {
   const { token, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [jobsStats, setJobsStats] = useState<JobsStats | null>(null);
+  const [stats,      setStats]      = useState<DashboardStats | null>(null);
+  const [jobsStats,  setJobsStats]  = useState<JobsStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
-  const [jobsStatsLoading, setJobsStatsLoading] = useState(true);
+  const [jobsLoading,  setJobsLoading]  = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Redirection si non authentifié
-  React.useEffect(() => {
-    if (!authLoading && !token) {
-      router.push("/login");
-    }
+  useEffect(() => {
+    if (!authLoading && !token) router.push("/login");
   }, [token, authLoading, router]);
 
   useEffect(() => {
     if (!token) return;
-    let isMounted = true;
-
-    const fetchStats = async () => {
-      setError(null);
+    (async () => {
       setStatsLoading(true);
       try {
-        const res = await api.get<DashboardStats>(
-          `/dashboard/stats`,
-          authHeaders(token || undefined),
-        );
-        if (isMounted) setStats(res.data);
-      } catch {
-        if (isMounted) setError("Erreur lors du chargement des statistiques");
-      } finally {
-        if (isMounted) setStatsLoading(false);
-      }
-    };
-
-    fetchStats();
-    const interval = setInterval(fetchStats, 300000);
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
+        const res = await api.get<DashboardStats>(`/dashboard/stats`, authHeaders(token));
+        setStats(res.data);
+      } catch { setError("Erreur lors du chargement des statistiques"); }
+      finally { setStatsLoading(false); }
+    })();
   }, [token]);
 
   useEffect(() => {
     if (!token) return;
-    let isMounted = true;
-
-    const fetchJobsStats = async () => {
-      setJobsStatsLoading(true);
+    (async () => {
+      setJobsLoading(true);
       try {
-        const res = await api.get<JobsStats>(
-          `/dashboard/jobs-stats`,
-          authHeaders(token || undefined),
-        );
-        if (isMounted) setJobsStats(res.data);
-      } catch (error) {
-        console.error("Erreur lors du chargement des stats jobs:", error);
-      } finally {
-        if (isMounted) setJobsStatsLoading(false);
-      }
-    };
-
-    fetchJobsStats();
-    const interval = setInterval(fetchJobsStats, 30000);
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
+        const res = await api.get<JobsStats>(`/dashboard/jobs-stats`, authHeaders(token));
+        setJobsStats(res.data);
+      } catch {}
+      finally { setJobsLoading(false); }
+    })();
   }, [token]);
 
-  const kpiData = [
-    {
-      icon: faUser,
-      value: stats?.users || 0,
-      label: "Utilisateurs",
-      iconColor: "text-indigo-400",
-      loading: statsLoading,
-    },
-    {
-      icon: faBriefcase,
-      value: stats?.jobs || 0,
-      label: "Offres actives",
-      iconColor: "text-emerald-400",
-      loading: statsLoading,
-    },
-    {
-      icon: faFileAlt,
-      value: stats?.applications || 0,
-      label: "Candidatures",
-      iconColor: "text-orange-400",
-      loading: statsLoading,
-    },
-    {
-      icon: faDownload,
-      value: stats?.cvDownloads || 0,
-      label: "Téléchargements CV",
-      iconColor: "text-purple-400",
-      loading: statsLoading,
-    },
-    {
-      icon: faFileSignature,
-      value: stats?.cvRequestsPending || 0,
-      label: "Demandes CV en attente",
-      iconColor: "text-pink-400",
-      loading: statsLoading,
-    },
-    {
-      icon: faHourglassHalf,
-      value: stats?.pendingApplications || 0,
-      label: "Candidatures en attente",
-      iconColor: "text-yellow-400",
-      loading: statsLoading,
-    },
+  const kpis = [
+    { icon: faUser,          value: stats?.users ?? 0,              label: "Utilisateurs",           iconColor: "#a78bfa" },
+    { icon: faBriefcase,     value: stats?.jobs ?? 0,               label: "Offres actives",         iconColor: "#00e5b0" },
+    { icon: faFileAlt,       value: stats?.applications ?? 0,       label: "Candidatures",           iconColor: "#fb923c" },
+    { icon: faDownload,      value: stats?.cvDownloads ?? 0,        label: "Téléchargements CV",     iconColor: "#3b9eff" },
+    { icon: faFileSignature, value: stats?.cvRequestsPending ?? 0,  label: "Demandes CV en attente", iconColor: "#f472b6" },
+    { icon: faHourglassHalf, value: stats?.pendingApplications ?? 0,label: "Candidatures en attente",iconColor: "#fbbf24" },
   ];
 
-  const advancedJobStats = jobsStats
-    ? [
-        {
-          icon: faBriefcase,
-          value: jobsStats.totalJobs,
-          label: "Offres (total brut)",
-          iconColor: "text-indigo-400",
-          loading: jobsStatsLoading,
-        },
-        {
-          icon: faBriefcase,
-          value: jobsStats.totalJobsActive,
-          label: "Offres non supprimées",
-          iconColor: "text-emerald-400",
-          loading: jobsStatsLoading,
-        },
-        {
-          icon: faCheckCircle,
-          value: jobsStats.activeJobs,
-          label: "Offres actives",
-          iconColor: "text-green-400",
-          loading: jobsStatsLoading,
-        },
-        {
-          icon: faTimesCircle,
-          value: jobsStats.expiredJobs,
-          label: "Offres expirées",
-          iconColor: "text-red-400",
-          loading: jobsStatsLoading,
-        },
-        {
-          icon: faClock,
-          value: jobsStats.upcomingJobs,
-          label: "Offres à venir",
-          iconColor: "text-yellow-400",
-          loading: jobsStatsLoading,
-        },
-        {
-          icon: faFileSignature,
-          value: jobsStats.remoteJobs,
-          label: "Offres télétravail",
-          iconColor: "text-blue-400",
-          loading: jobsStatsLoading,
-        },
-      ]
-    : [];
-
-  // Couleurs pour le graphique
-  const chartColors = [
-    "bg-blue-500",
-    "bg-green-500",
-    "bg-yellow-500",
-    "bg-purple-500",
-    "bg-pink-500",
-    "bg-indigo-500",
-    "bg-red-500",
-    "bg-orange-500",
-    "bg-teal-500",
-  ];
+  const jobKpis = jobsStats ? [
+    { icon: faBriefcase,  value: jobsStats.totalJobs,       label: "Total des offres",    iconColor: "#a78bfa" },
+    { icon: faCheckCircle,value: jobsStats.activeJobs,      label: "Offres actives",      iconColor: "#00e5b0" },
+    { icon: faTimesCircle,value: jobsStats.expiredJobs,     label: "Offres expirées",     iconColor: "#f87171" },
+    { icon: faClock,      value: jobsStats.upcomingJobs,    label: "Offres à venir",      iconColor: "#fbbf24" },
+    { icon: faChartBar,   value: jobsStats.remoteJobs,      label: "Télétravail",         iconColor: "#3b9eff" },
+    { icon: faBriefcase,  value: jobsStats.totalJobsActive, label: "Non supprimées",      iconColor: "#34d399" },
+  ] : [];
 
   return (
     <AdminLayout>
-        <div className="mb-10">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Tableau de bord
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Statistiques et indicateurs clés de votre plateforme
-          </p>
+      {/* Page header */}
+      <div style={{ marginBottom: 36 }}>
+        <p style={{
+          fontSize:   11,
+          fontWeight: 600,
+          color:      "var(--text-muted)",
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          fontFamily: "var(--font-display)",
+          marginBottom: 8,
+        }}>
+          Vue d&apos;ensemble
+        </p>
+        <h1 style={{
+          fontFamily:    "var(--font-display)",
+          fontSize:      28,
+          fontWeight:    800,
+          letterSpacing: "-0.02em",
+          marginBottom:  6,
+        }}>
+          Tableau de bord
+        </h1>
+        <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>
+          Statistiques et indicateurs clés de la plateforme
+        </p>
+      </div>
+
+      {error && (
+        <div style={{
+          padding:      "14px 18px",
+          background:   "rgba(248,113,113,0.08)",
+          border:       "1px solid rgba(248,113,113,0.2)",
+          borderRadius: "var(--radius-md)",
+          color:        "var(--accent-red)",
+          fontSize:     14,
+          marginBottom: 24,
+        }}>
+          {error}
+        </div>
+      )}
+
+      {/* KPI Grid */}
+      <div style={{
+        display:             "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+        gap:                 16,
+        marginBottom:        32,
+      }}>
+        {kpis.map((kpi, i) => (
+          <StatCard key={i} {...kpi} loading={statsLoading} />
+        ))}
+      </div>
+
+      {/* Section label */}
+      <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
+        <h2 style={{
+          fontFamily: "var(--font-display)",
+          fontSize:   16,
+          fontWeight: 700,
+          color:      "var(--text-primary)",
+        }}>
+          Statistiques des offres
+        </h2>
+        <div style={{ flex: 1, height: 1, background: "var(--border-subtle)" }} />
+      </div>
+
+      <div style={{
+        display:             "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+        gap:                 16,
+        marginBottom:        32,
+      }}>
+        {jobKpis.map((kpi, i) => (
+          <StatCard key={i} {...kpi} loading={jobsLoading} />
+        ))}
+      </div>
+
+      {/* Category chart */}
+      <div className="glass-card" style={{ padding: "28px" }}>
+        <div style={{
+          display:       "flex",
+          justifyContent:"space-between",
+          alignItems:    "center",
+          marginBottom:  24,
+        }}>
+          <h2 style={{
+            fontFamily: "var(--font-display)",
+            fontSize:   16,
+            fontWeight: 700,
+          }}>
+            Répartition par catégorie
+          </h2>
+          <FontAwesomeIcon icon={faChartBar} style={{ color: "var(--text-muted)", fontSize: 16 }} />
         </div>
 
-        {error && (
-          <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-8">
-            {error}
-          </div>
-        )}
-
-        {/* Section des statistiques principales */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-          {kpiData.map((kpi, index) => (
-            <StatCard
-              key={index}
-              icon={kpi.icon}
-              value={kpi.value}
-              label={kpi.label}
-              iconColor={kpi.iconColor}
-              loading={kpi.loading}
-            />
-          ))}
-        </div>
-
-        {/* Section des statistiques avancées */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-          {advancedJobStats.map((stat, index) => (
-            <StatCard
-              key={index}
-              icon={stat.icon}
-              value={stat.value}
-              label={stat.label}
-              iconColor={stat.iconColor}
-              loading={stat.loading}
-            />
-          ))}
-        </div>
-
-        {/* Graphique Offres par catégorie */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              Offres par catégorie
-            </h2>
-            <FontAwesomeIcon
-              icon={faChartBar}
-              className="text-blue-500 text-xl"
-            />
-          </div>
-
-          {statsLoading ? (
-            <div className="flex justify-center py-10">
-              <FontAwesomeIcon
-                icon={faSpinner}
-                className="text-blue-500 text-2xl animate-spin"
-              />
-            </div>
-          ) : stats?.jobsByCategory && stats.jobsByCategory.length > 0 ? (
-            <div className="space-y-6">
-              {/* Barres horizontales */}
-              <div className="space-y-4">
-                {stats.jobsByCategory.map((cat, idx) => {
-                  const maxCount = Math.max(
-                    ...stats.jobsByCategory.map((c) => c.count),
-                    1,
-                  );
-                  const widthPercentage = (cat.count / maxCount) * 100;
-
-                  return (
-                    <div key={cat.category} className="space-y-1">
-                      <div className="flex justify-between">
-                        <span className="text-gray-700 dark:text-gray-300 font-medium">
-                          {cat.category}
-                        </span>
-                        <span className="text-gray-500 dark:text-gray-400">
-                          {cat.count} offres
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                        <div
-                          className={`h-2.5 rounded-full ${chartColors[idx % chartColors.length]}`}
-                          style={{ width: `${widthPercentage}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Légende des couleurs */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                {stats.jobsByCategory.map((cat, idx) => (
-                  <div key={idx} className="flex items-center">
-                    <div
-                      className={`w-3 h-3 rounded-full mr-2 ${chartColors[idx % chartColors.length]}`}
-                    ></div>
-                    <span className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                      {cat.category}
+        {statsLoading ? (
+          <Loader fullPage />
+        ) : stats?.jobsByCategory && stats.jobsByCategory.length > 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {stats.jobsByCategory.map(({ category, count }, idx) => {
+              const max = Math.max(...stats.jobsByCategory.map(c => c.count), 1);
+              const pct = (count / max) * 100;
+              const color = CHART_COLORS[idx % CHART_COLORS.length];
+              return (
+                <div key={category}>
+                  <div style={{
+                    display:       "flex",
+                    justifyContent:"space-between",
+                    marginBottom:  8,
+                    fontSize:      13,
+                  }}>
+                    <span style={{ color: "var(--text-secondary)" }}>{category}</span>
+                    <span style={{ color, fontWeight: 600, fontFamily: "var(--font-display)" }}>
+                      {count}
                     </span>
                   </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-10">
-              <div className="text-gray-500 dark:text-gray-400">
-                Aucune donnée disponible sur les offres par catégorie
-              </div>
-            </div>
-          )}
-        </div>
+                  <div style={{
+                    width:        "100%",
+                    height:       6,
+                    background:   "var(--bg-elevated)",
+                    borderRadius: 99,
+                    overflow:     "hidden",
+                  }}>
+                    <div style={{
+                      width:        `${pct}%`,
+                      height:       "100%",
+                      background:   color,
+                      borderRadius: 99,
+                      boxShadow:    `0 0 8px ${color}60`,
+                      transition:   "width 0.8s var(--ease-smooth)",
+                    }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{
+            textAlign: "center", padding: "40px",
+            color: "var(--text-muted)", fontSize: 14,
+          }}>
+            Aucune donnée disponible
+          </div>
+        )}
+      </div>
     </AdminLayout>
   );
 }

@@ -1,50 +1,246 @@
+"use client";
+
+import React from "react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import Link from "next/link";
+import Image from "next/image";
+import { Award, Headphones, ChevronRight } from "lucide-react";
 
 export default function CVPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col items-center">
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "var(--bg-base)",
+        color: "var(--text-primary)",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <Navbar />
-      <main className="w-full max-w-3xl px-4 py-10 flex flex-col gap-8">
-        <h1 className="text-3xl font-bold mb-4">Service CV Professionnel</h1>
-        <p className="mb-4">
-          Boostez votre carrière avec un CV moderne, adapté à votre secteur et à
-          vos ambitions. Découvrez nos modèles et bénéficiez d’un accompagnement
-          personnalisé.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 flex flex-col items-center">
-            <img
-              src="/cv-template.png"
-              alt="Modèle CV 1"
-              className="w-32 h-40 object-contain mb-2"
-            />
-            <span className="font-semibold">Modèle Moderne</span>
-          </div>
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 flex flex-col items-center">
-            <img
-              src="/cv-template.png"
-              alt="Modèle CV 2"
-              className="w-32 h-40 object-contain mb-2"
-            />
-            <span className="font-semibold">Modèle Classique</span>
-          </div>
+
+      <main
+        style={{
+          flex: 1,
+          width: "100%",
+          maxWidth: "900px",
+          margin: "0 auto",
+          padding: "60px 24px",
+        }}
+      >
+        {/* Header Section */}
+        <div style={{ marginBottom: "48px" }}>
+          <div className="section-label">Service Expert</div>
+          <h1
+            style={{
+              fontSize: "clamp(32px, 5vw, 48px)",
+              marginBottom: "16px",
+              fontFamily: "var(--font-display)",
+            }}
+          >
+            Service CV <span className="text-gradient">Professionnel</span>
+          </h1>
+          <p
+            style={{
+              color: "var(--text-secondary)",
+              fontSize: "18px",
+              lineHeight: "1.7",
+              maxWidth: "600px",
+            }}
+          >
+            Boostez votre carrière avec un CV moderne, parfaitement adapté aux
+            algorithmes de recrutement et à votre secteur d’activité.
+          </p>
         </div>
-        <div className="bg-blue-50 dark:bg-blue-900 rounded-lg p-6 mt-6">
-          <h2 className="text-xl font-bold mb-2">Tarifs</h2>
-          <ul className="list-disc list-inside">
-            <li>CV personnalisé : 49€</li>
-            <li>Pack CV + Lettre de motivation : 69€</li>
-            <li>Coaching entretien : 39€/h</li>
-          </ul>
-        </div>
-        <a
-          href="/contact"
-          className="mt-6 inline-block bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition self-start"
+
+        {/* Modèles de CV */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gap: "24px",
+            marginBottom: "56px",
+          }}
         >
-          Demander un devis
-        </a>
+          {[
+            {
+              title: "Modèle Moderne",
+              img: "/cv-template-1.png",
+              tag: "Populaire",
+            },
+            {
+              title: "Modèle Classique",
+              img: "/cv-template-2.png",
+              tag: "Exécutif",
+            },
+          ].map((item, index) => (
+            <div
+              key={index}
+              className="glass-card glass-card-hover"
+              style={{ padding: "24px", textAlign: "center" }}
+            >
+              <div
+                style={{
+                  background: "var(--bg-surface)",
+                  borderRadius: "var(--radius-md)",
+                  padding: "20px",
+                  marginBottom: "20px",
+                  border: "1px solid var(--border-subtle)",
+                  position: "relative", // Requis pour les images Next.js
+                  height: "280px", // On fixe une hauteur au conteneur
+                }}
+              >
+                {/* 2. Utilisation de <Image /> au lieu de <img> */}
+                <Image
+                  src={item.img}
+                  alt={item.title}
+                  fill // Remplit le conteneur parent
+                  style={{
+                    objectFit: "contain",
+                    borderRadius: "4px",
+                    padding: "10px",
+                  }}
+                />
+              </div>
+              <div
+                className="badge badge-green"
+                style={{ marginBottom: "12px" }}
+              >
+                {item.tag}
+              </div>
+              <h3 style={{ fontSize: "18px", marginBottom: "8px" }}>
+                {item.title}
+              </h3>
+            </div>
+          ))}
+        </div>
+
+        {/* Tarifs et Services */}
+        <div
+          className="glass-card"
+          style={{
+            padding: "40px",
+            borderLeft: "4px solid var(--accent-primary)",
+          }}
+        >
+          <h2
+            style={{
+              fontSize: "24px",
+              marginBottom: "24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+            }}
+          >
+            <Award color="var(--accent-primary)" /> Tarifs & Accompagnement
+          </h2>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gap: "32px",
+            }}
+          >
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  borderBottom: "1px solid var(--border-subtle)",
+                  paddingBottom: "8px",
+                }}
+              >
+                <span style={{ color: "var(--text-secondary)" }}>
+                  CV Personnalisé
+                </span>
+                <span
+                  style={{ fontWeight: "700", color: "var(--accent-primary)" }}
+                >
+                  49€
+                </span>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  borderBottom: "1px solid var(--border-subtle)",
+                  paddingBottom: "8px",
+                }}
+              >
+                <span style={{ color: "var(--text-secondary)" }}>
+                  Pack CV + Lettre
+                </span>
+                <span
+                  style={{ fontWeight: "700", color: "var(--accent-primary)" }}
+                >
+                  69€
+                </span>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  borderBottom: "1px solid var(--border-subtle)",
+                  paddingBottom: "8px",
+                }}
+              >
+                <span style={{ color: "var(--text-secondary)" }}>
+                  Coaching Entretien
+                </span>
+                <span
+                  style={{ fontWeight: "700", color: "var(--accent-primary)" }}
+                >
+                  39€/h
+                </span>
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: "var(--bg-glass)",
+                padding: "20px",
+                borderRadius: "var(--radius-md)",
+                fontSize: "14px",
+                color: "var(--text-secondary)",
+              }}
+            >
+              <p style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
+                <ChevronRight size={16} color="var(--accent-primary)" />{" "}
+                Optimisation mots-clés ATS
+              </p>
+              <p style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
+                <ChevronRight size={16} color="var(--accent-primary)" /> Formats
+                PDF & Word inclus
+              </p>
+              <p style={{ display: "flex", gap: "8px" }}>
+                <ChevronRight size={16} color="var(--accent-primary)" />{" "}
+                Révision illimitée (7 jours)
+              </p>
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: "40px",
+              display: "flex",
+              gap: "16px",
+              flexWrap: "wrap",
+            }}
+          >
+            <Link href="/contact" className="btn-primary">
+              Demander un devis personnalisé
+            </Link>
+            <button className="btn-secondary">
+              <Headphones size={18} /> Parler à un expert
+            </button>
+          </div>
+        </div>
       </main>
+
       <Footer />
     </div>
   );
