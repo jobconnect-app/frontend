@@ -8,7 +8,7 @@ export const api = axios.create({
 });
 
 // Fonction utilitaire pour injecter le token dynamiquement dans les headers
-export function authHeaders(token?: string) {
+export function authHeaders(token?: string | null) {
   return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 }
 
